@@ -15,7 +15,7 @@
                 </select>
             </div>
         </form>
-        <a href="{{ route('tasks.create') }}" class="btn btn-success mb-2">Create Task</a>
+        <button class="btn btn-success mb-2" data-toggle="modal" data-target="#createTaskModal">Create Task</button>
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -44,15 +44,33 @@
     </div>
     <div class="col-md-4">
         <h2>Projects</h2>
-        <a href="{{ route('projects.create') }}" class="btn btn-success mb-2">Create Project</a>
-        <ul class="list-group">
+
+        <button class="btn btn-success mb-2" data-toggle="modal" data-target="#createProjectModal">Create Project</button>
+        <ul class="list-group" id="project-list">
             @foreach($projects as $project)
-            <li class="list-group-item">{{ $project->name }}</li>
+            <li class="list-group-item">
+                {{ $project->name }}
+                <form action="{{ route('projects.destroy', $project->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm float-right ml-2">Delete</button>
+                </form>
+                <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-primary btn-sm float-right">Edit</a>
+            </li>
             @endforeach
         </ul>
     </div>
 </div>
 
+<!-- Create Task Modal -->
+<x-modal id="createTaskModal" title="Create Task">
+    <x-task-form :projects="$projects" />
+</x-modal>
+
+<!-- Create Project Modal -->
+<x-modal id="createProjectModal" title="Create Project">
+    <x-project-form />
+</x-modal>
 @endsection
 
 @section('scripts')
@@ -74,6 +92,43 @@
                 });
             }
         }).disableSelection();
+
+        $('#projectForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            var actionUrl = form.attr('action');
+            $.ajax({
+                type: form.attr('method'),
+                url: actionUrl,
+                data: form.serialize(),
+                success: function(response) {
+                    $('#createProjectModal').modal('hide');
+                    $('#project-list').append('<li class="list-group-item">' + response.name + ' <a href="{{ url("projects") }}/' + response.id + '/edit" class="btn btn-primary btn-sm float-right ml-2">Edit</a><form action="{{ url("projects") }}/' + response.id + '" method="POST" style="display:inline;"><input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="DELETE"><button type="submit" class="btn btn-danger btn-sm float-right">Delete</button></form></li>');
+                    form.trigger('reset');
+                },
+                error: function(response) {
+                    console.log('Error:', response);
+                }
+            });
+        });
+
+        $('#taskForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            var actionUrl = form.attr('action');
+            $.ajax({
+                type: form.attr('method'),
+                url: actionUrl,
+                data: form.serialize(),
+                success: function(response) {
+                    $('#createTaskModal').modal('hide');
+                    location.reload();
+                },
+                error: function(response) {
+                    console.log('Error:', response);
+                }
+            });
+        });
     });
 
     function updateTaskPriorities(taskIds) {

@@ -24,7 +24,11 @@ class ProjectController extends Controller
             'name' => 'required',
         ]);
 
-        Project::create($request->all());
+        $project = Project::create($request->all());
+
+        if ($request->ajax()) {
+            return response()->json($project);
+        }
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
@@ -42,12 +46,20 @@ class ProjectController extends Controller
 
         $project->update($request->all());
 
+        if ($request->ajax()) {
+            return response()->json($project);
+        }
+
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project)
     {
         $project->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
