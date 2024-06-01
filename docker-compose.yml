@@ -1,26 +1,32 @@
 version: '3.8'
 
 services:
-  app:
-    image: laravel:latest
-    container_name: laravel_app
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: task_manager
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     ports:
-      - 8000:80
+      - "3306:3306"
     volumes:
-      - .:/var/www/html
+      - mysql_data:/var/lib/mysql
     networks:
       - laravel
 
-  mysql:
-    image: mysql:5.7
-    container_name: mysql_db
-    ports:
-      - 3306:3306
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
     environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_ROOT_PASSWORD: secret
-    volumes:
-      - mysql_data:/var/lib/mysql
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
     networks:
       - laravel
 
