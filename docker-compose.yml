@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    image: laravel:latest
+    container_name: laravel_app
+    ports:
+      - 8000:80
+    volumes:
+      - .:/var/www/html
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql_db
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+
+networks:
+  laravel:
+
+volumes:
+  mysql_data:
